@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhalenOnTheWeb | Integration Architect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 
+        MASTER BRANDING PALETTE 
+        To use this in development: 
+        1. Copy everything inside these <style> tags.
+        2. Save as 'styles.css'.
+        3. Link in your HTML via <link rel="stylesheet" href="styles.css">.
+    -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            /* Theme: The Architect (Default) */
+            --bg-page: #fafaf9; /* Stone 50 */
+            --bg-card: #ffffff;
+            --text-main: #292524; /* Stone 800 */
+            --text-muted: #57534e; /* Stone 600 */
+            --brand: #4f46e5; /* Indigo 600 */
+            --brand-light: #e0e7ff; /* Indigo 100 */
+            --accent: #ea580c; /* Orange 600 */
+            --border: #e7e5e4; /* Stone 200 */
+        }
+
+        [data-theme="performer"] {
+            /* Theme: The Performer */
+            --bg-page: #f8fafc; /* Slate 50 */
+            --bg-card: #ffffff;
+            --text-main: #0f172a; /* Slate 900 */
+            --text-muted: #475569; /* Slate 600 */
+            --brand: #334155; /* Slate 700 */
+            --brand-light: #f1f5f9; /* Slate 100 */
+            --accent: #d97706; /* Amber 600 */
+            --border: #e2e8f0; /* Slate 200 */
+        }
+
+        [data-theme="lab"] {
+            /* Theme: The Lab */
+            --bg-page: #09090b; /* Zinc 950 */
+            --bg-card: #18181b; /* Zinc 900 */
+            --text-main: #f4f4f5; /* Zinc 100 */
+            --text-muted: #a1a1aa; /* Zinc 400 */
+            --brand: #10b981; /* Emerald 500 */
+            --brand-light: #064e3b; /* Emerald 900 */
+            --accent: #6366f1; /* Indigo 500 */
+            --border: #27272a; /* Zinc 800 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container { height: 250px; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-page); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Semantic utility classes mapping variables to elements */
+        .text-brand { color: var(--brand); }
+        .bg-brand { background-color: var(--brand); }
+        .border-brand { border-color: var(--brand); }
+        .text-accent { color: var(--accent); }
+        .bg-accent { background-color: var(--accent); }
+        .border-accent { border-color: var(--accent); }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand selection:text-white">
+
+    <!-- Theme Selector Widget -->
+    <div class="fixed bottom-6 right-6 z-[100]">
+        <div class="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-2xl border border-stone-200 flex gap-2">
+            <button onclick="setTheme('architect')" class="w-10 h-10 rounded-full bg-indigo-600 border-2 border-white shadow-sm" title="The Architect"></button>
+            <button onclick="setTheme('performer')" class="w-10 h-10 rounded-full bg-slate-700 border-2 border-white shadow-sm" title="The Performer"></button>
+            <button onclick="setTheme('lab')" class="w-10 h-10 rounded-full bg-emerald-500 border-2 border-white shadow-sm" title="The Lab"></button>
+        </div>
+    </div>
+
+    <!-- 1. Global Header -->
+    <nav class="sticky top-0 z-50 bg-[var(--bg-page)]/90 backdrop-blur-md border-b border-[var(--border)] shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <span class="text-2xl font-bold text-brand">W</span>
+                    <div class="flex flex-col">
+                        <span class="font-bold text-lg leading-none tracking-tight">WhalenOnTheWeb</span>
+                        <span class="text-xs text-[var(--text-muted)] uppercase tracking-widest">Integration Architect</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#triptych" class="text-[var(--text-muted)] hover:text-brand transition-colors text-sm font-semibold">The Pillars</a>
+                    <a href="#red-thread" class="text-[var(--text-muted)] hover:text-brand transition-colors text-sm font-semibold">The Deficit</a>
+                    <a href="#lab-feed" class="text-[var(--text-muted)] hover:text-brand transition-colors text-sm font-semibold">Lab Notes</a>
+                    <a href="#services" class="text-[var(--text-muted)] hover:text-brand transition-colors text-sm font-semibold">Services</a>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-[var(--text-main)] text-2xl">&#9776;</button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-[var(--bg-page)] border-b border-[var(--border)] px-4 py-4 space-y-2">
+            <a href="#triptych" class="block font-medium">The Pillars</a>
+            <a href="#red-thread" class="block font-medium">The Deficit</a>
+            <a href="#lab-feed" class="block font-medium">Lab Notes</a>
+            <a href="#services" class="block font-medium">Services</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="pt-24 pb-16 px-4 text-center max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+            Eliminating the <br>
+            <span class="text-accent border-b-4 border-accent">Integration Deficit</span>.
+        </h1>
+        <p class="text-xl text-[var(--text-muted)] mb-10 leading-relaxed">
+            Bridging the gap between information and implementation. I build the systems (The 6th Tool) and strategies (The AI Edge) that allow high-performers to execute at scale.
+        </p>
+        <a href="#red-thread" class="inline-block bg-brand text-white px-8 py-3 rounded-md font-semibold hover:opacity-90 transition-all shadow-md transform hover:-translate-y-0.5">
+            Understand the Problem &#8595;
+        </a>
+    </header>
+
+    <!-- 2. The Triptych -->
+    <section id="triptych" class="py-16 bg-[var(--bg-card)] border-y border-[var(--border)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold mb-4">The Integrated Lab</h2>
+                <p class="text-[var(--text-muted)]">Explore the three distinct but deeply connected domains where pedagogical research meets technical execution.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Lab -->
+                <div class="group bg-[var(--bg-page)] rounded-xl border border-[var(--border)] p-8 hover:border-brand hover:shadow-xl transition-all flex flex-col h-full">
+                    <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 transition-opacity">&#127979;</div>
+                    <h3 class="text-xl font-bold mb-2">The Innovation Lab</h3>
+                    <p class="text-sm font-semibold text-brand mb-4 uppercase tracking-wider">Higher Ed / CS</p>
+                    <p class="text-[var(--text-muted)] mb-6 flex-grow">The R&D department. Stress-testing "The 6th Tool" methodologies with real-world student data.</p>
+                    <a href="#lab-feed" class="text-center bg-[var(--border)] hover:bg-brand hover:text-white py-2 rounded font-semibold transition-colors">See the Research</a>
+                </div>
+                <!-- Scaffolding -->
+                <div class="group bg-[var(--bg-page)] rounded-xl border border-[var(--border)] p-8 hover:border-brand hover:shadow-xl transition-all flex flex-col h-full border-t-4 border-t-accent">
+                    <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 transition-opacity">&#9201;</div>
+                    <h3 class="text-xl font-bold mb-2">High-Performance Scaffolding</h3>
+                    <p class="text-sm font-semibold text-brand mb-4 uppercase tracking-wider">Elite Performance</p>
+                    <p class="text-[var(--text-muted)] mb-6 flex-grow">Operational strategy for athletes. Building lean, "just-in-time" frameworks for high-stakes environments.</p>
+                    <button onclick="switchTab('tab-academic')" class="text-center bg-[var(--border)] hover:bg-brand hover:text-white py-2 rounded font-semibold transition-colors">Request Strategy</button>
+                </div>
+                <!-- Edge -->
+                <div class="group bg-[var(--bg-page)] rounded-xl border border-[var(--border)] p-8 hover:border-brand hover:shadow-xl transition-all flex flex-col h-full">
+                    <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 transition-opacity">&#128241;</div>
+                    <h3 class="text-xl font-bold mb-2">Applied Intelligence</h3>
+                    <p class="text-sm font-semibold text-brand mb-4 uppercase tracking-wider">iOS & AI Build</p>
+                    <p class="text-[var(--text-muted)] mb-6 flex-grow">Solving corporate bottlenecks by building bespoke iOS applications and integrating "The AI Edge."</p>
+                    <button onclick="switchTab('tab-technical')" class="text-center bg-[var(--border)] hover:bg-brand hover:text-white py-2 rounded font-semibold transition-colors">View the Builds</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. The "Red Thread" Section -->
+    <section id="red-thread" class="py-20 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-sm font-bold tracking-widest text-accent uppercase mb-2">The Core Problem</h2>
+                    <h3 class="text-3xl md:text-4xl font-bold mb-6 leading-tight">Knowledge is everywhere.<br>Integration is rare.</h3>
+                    <p class="text-lg text-[var(--text-muted)] mb-6">
+                        In an era of endless tools, the biggest bottleneck to success is the <strong>Integration Deficit</strong>.
+                    </p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-2"><span class="text-brand">&#10140;</span> <span><strong>The Student</strong> knows theory but cannot "ship" the code.</span></li>
+                        <li class="flex items-start gap-2"><span class="text-brand">&#10140;</span> <span><strong>The Athlete</strong> struggles to integrate academic scheduling.</span></li>
+                        <li class="flex items-start gap-2"><span class="text-brand">&#10140;</span> <span><strong>The Client</strong> has AI but no workflow integration.</span></li>
+                    </ul>
+                    <div class="bg-[var(--bg-card)] p-6 rounded-lg border-l-4 border-brand shadow-sm">
+                        <h4 class="font-bold mb-2">The Solution: The 6th Tool</h4>
+                        <p class="text-[var(--text-muted)] text-sm">A cognitive-technical layer that turns information into automated implementation.</p>
+                    </div>
+                </div>
+                <div class="bg-[var(--bg-card)] p-6 rounded-xl shadow-lg border border-[var(--border)]">
+                    <div class="chart-container"><canvas id="deficitChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Lab Feed -->
+    <section id="lab-feed" class="py-20 bg-[var(--bg-card)] border-t border-[var(--border)]">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl font-bold mb-4">Live from the Lab</h2>
+                <div class="flex flex-wrap justify-center gap-3 mt-6">
+                    <button class="filter-btn active bg-brand text-white px-4 py-2 rounded-full text-sm font-semibold" data-filter="all">All Insights</button>
+                    <button class="filter-btn bg-[var(--bg-page)] text-[var(--text-muted)] px-4 py-2 rounded-full text-sm font-semibold border border-[var(--border)]" data-filter="cs">CS</button>
+                    <button class="filter-btn bg-[var(--bg-page)] text-[var(--text-muted)] px-4 py-2 rounded-full text-sm font-semibold border border-[var(--border)]" data-filter="athletics">Athletics</button>
+                    <button class="filter-btn bg-[var(--bg-page)] text-[var(--text-muted)] px-4 py-2 rounded-full text-sm font-semibold border border-[var(--border)]" data-filter="ai">AI</button>
+                </div>
+            </div>
+            <div class="grid gap-6 md:grid-cols-2" id="feed-container"></div>
+        </div>
+    </section>
+
+    <!-- 5. Services Hub -->
+    <section id="services" class="py-20 bg-zinc-900 text-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold mb-4">Action Hub</h3>
+            </div>
+            <div class="flex flex-col sm:flex-row border-b border-zinc-700 mb-8">
+                <button class="service-tab active px-6 py-4 font-bold border-b-2 border-brand text-brand" data-target="tab-academic">Academic Strategy</button>
+                <button class="service-tab px-6 py-4 font-bold border-b-2 border-transparent text-zinc-500" data-target="tab-technical">Technical Consulting</button>
+                <button class="service-tab px-6 py-4 font-bold border-b-2 border-transparent text-zinc-500" data-target="tab-speaking">Speaking</button>
+            </div>
+            <div class="bg-zinc-800 rounded-xl p-8 md:p-12 border border-zinc-700">
+                <div id="tab-academic" class="tab-content active">
+                    <h4 class="text-2xl font-bold mb-4">For Universities & Athletes</h4>
+                    <p class="text-zinc-400 mb-8">Custom, lean frameworks that protect GPA while maximizing performance potential.</p>
+                    <button class="bg-white text-black px-6 py-3 rounded font-bold hover:bg-zinc-200 transition-colors">Request Audit</button>
+                </div>
+                <div id="tab-technical" class="tab-content">
+                    <h4 class="text-2xl font-bold mb-4">Bespoke iOS & AI</h4>
+                    <p class="text-zinc-400 mb-8">Native SwiftUI development and LLM API integration built for specific workflows.</p>
+                    <button class="bg-white text-black px-6 py-3 rounded font-bold hover:bg-zinc-200 transition-colors">View Portfolio</button>
+                </div>
+                <div id="tab-speaking" class="tab-content">
+                    <h4 class="text-2xl font-bold mb-4">The "6th Tool" Workshops</h4>
+                    <p class="text-zinc-400 mb-8">Keynotes on the intersection of pedagogy and artificial intelligence.</p>
+                    <button class="bg-white text-black px-6 py-3 rounded font-bold hover:bg-zinc-200 transition-colors">Book Speaking</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Footer -->
+    <footer class="bg-black text-zinc-500 py-12 text-center">
+        <span class="text-xl font-bold text-white block mb-4">WhalenOnTheWeb</span>
+        <div class="text-xs uppercase tracking-widest">&copy; <span id="year"></span> Integration Architect</div>
+    </footer>
+
+    <script>
+        // Theme Management
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            updateChart(theme);
+        }
+
+        // Mobile Menu
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Chart Logic
+        let deficitChart;
+        const ctx = document.getElementById('deficitChart').getContext('2d');
+        
+        function updateChart(theme) {
+            const colors = {
+                architect: { brand: '#4f46e5', accent: '#ea580c' },
+                performer: { brand: '#334155', accent: '#d97706' },
+                lab: { brand: '#10b981', accent: '#6366f1' }
+            }[theme || 'architect'];
+
+            if (deficitChart) deficitChart.destroy();
+            
+            deficitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                    datasets: [
+                        { label: 'Available Tools', data: [20, 35, 60, 90, 130], borderColor: colors.accent, tension: 0.4 },
+                        { label: 'Human Capacity', data: [15, 25, 35, 42, 48], borderColor: colors.brand, backgroundColor: colors.brand + '22', fill: true, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+        updateChart('architect');
+
+        // Lab Feed Filtering
+        const labNotes = [
+            { category: 'cs', icon: '&#128187;', title: 'Swift Concurrency', snippet: 'Bridging pedagogical gaps in async/await.', date: 'Latest' },
+            { category: 'ai', icon: '&#129302;', title: 'LLM Workflow Customization', snippet: 'Eliminating friction in legal sector AI adoption.', date: 'Recently' },
+            { category: 'athletics', icon: '&#127939;', title: 'Roster Scaffolding', snippet: 'Optimizing GPA for high-travel schedules.', date: 'Archive' }
+        ];
+
+        function renderFeed(filter) {
+            const container = document.getElementById('feed-container');
+            container.innerHTML = '';
+            labNotes.filter(n => filter === 'all' || n.category === filter).forEach(note => {
+                const card = document.createElement('div');
+                card.className = 'bg-[var(--bg-page)] border border-[var(--border)] p-6 rounded-xl hover:shadow-md transition-all cursor-pointer';
+                card.innerHTML = `<div class="flex justify-between mb-3"><span class="text-2xl">${note.icon}</span><span class="text-xs font-bold text-stone-400 uppercase tracking-widest">${note.date}</span></div><h4 class="font-bold mb-2">${note.title}</h4><p class="text-sm text-[var(--text-muted)]">${note.snippet}</p>`;
+                container.appendChild(card);
+            });
+        }
+        
+        document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('bg-brand', 'text-white'));
+            e.target.classList.add('bg-brand', 'text-white');
+            renderFeed(e.target.getAttribute('data-filter'));
+        }));
+        renderFeed('all');
+
+        // Tabs
+        function switchTab(id) {
+            document.querySelectorAll('.service-tab').forEach(t => {
+                t.classList.remove('active', 'border-brand', 'text-brand');
+                t.classList.add('border-transparent', 'text-zinc-500');
+            });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const btn = document.querySelector(`[data-target="${id}"]`);
+            btn.classList.add('active', 'border-brand', 'text-brand');
+            document.getElementById(id).classList.add('active');
+        }
+        document.querySelectorAll('.service-tab').forEach(t => t.addEventListener('click', (e) => switchTab(e.target.dataset.target)));
+    </script>
+</body>
+</html>
